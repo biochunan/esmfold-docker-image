@@ -1,6 +1,8 @@
 # Build Image for running ESMFold 
 
-Date: Sunday, Dec 3, 2023
+- Date: Sunday, Dec 3, 2023
+- Author: ChuNan Liu 
+- Email: chunan.liu@ucl.ac.uk
 
 ## Build Image
 ```shell
