@@ -1,0 +1,5 @@
+]2;conda activate py39-esmfold]1;]2;esm-fold $@]1;24/01/27 15:08:30 | INFO | root | Reading sequences from /home/vscode/input/1a2y-HLC.fasta
+24/01/27 15:08:30 | INFO | root | Loaded 1 sequences from /home/vscode/input/1a2y-HLC.fasta
+24/01/27 15:08:30 | INFO | root | Loading model
+24/01/27 15:09:02 | INFO | root | Starting Predictions
+24/01/27 15:09:16 | INFO | root | Predicted structure for 1a2y_0P|H:L:C with length 355, pLDDT 80.1, pTM 0.595 in 14.4s. 1 / 1 completed.
