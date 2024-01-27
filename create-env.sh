@@ -1,12 +1,12 @@
 #!/bin/zsh
 
 # init conda
-conda init zsh 
+conda init zsh
 
-# source .zshrc to activate conda 
+# source .zshrc to activate conda
 source $HOME/.zshrc
 
-# install openfold 
+# install openfold
 cd /home/vscode/openfold && \
     conda activate openfold-venv && \
     pip install . && \
