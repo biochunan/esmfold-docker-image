@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.3.1-devel-ubuntu20.04 
+FROM nvidia/cuda:11.3.1-devel-ubuntu20.04
 # 11.3 required for openfold
 
 ARG USERNAME=vscode
@@ -26,7 +26,7 @@ RUN sudo chsh -s /bin/zsh
 # credits: @pangyuteng
 # refer to: https://gist.github.com/pangyuteng/f5b00fe63ac31a27be00c56996197597
 # Use the above args during building https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
-ARG CONDA_VER=4.5.11
+ARG CONDA_VER=latest
 ARG OS_TYPE=x86_64
 # Install miniconda to /miniconda
 RUN curl -LO "http://repo.continuum.io/miniconda/Miniconda3-${CONDA_VER}-Linux-${OS_TYPE}.sh"
@@ -45,30 +45,28 @@ RUN conda clean -a -y && pip cache purge
 
 # [Optional] Set the default user. Omit if you want to keep the default as root.
 USER $USERNAME
+# add user to sudo group
+RUN sudo usermod -aG sudo $USERNAME
 
 # install oh-my-zsh for vscode
 RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/v1.1.5/zsh-in-docker.sh)" -- \
     -t robbyrussell
 
 # ------------------- install OpenFold and ESM2 -------------------
-# copy openfold.tar.gz to /home/vscode
-# COPY openfold.tar.gz /home/vscode/openfold.tar.gz
-# COPY esm-main.tar.gz /home/vscode/esm-main.tar.gz
-RUN pip install gdown 
-# add gdown to PATH 
+RUN pip install gdown==5.0.1
+# add gdown to PATH
 ENV PATH="/home/vscode/.local/bin:${PATH}"
-RUN gdown https://drive.google.com/uc?id=1PvZLs4zeh3g_JajIsbeQmhOewoI_Stll -O /home/vscode/openfold.tar.gz && \
-    gdown https://drive.google.com/uc?id=1YE_CEOUc5FYxrEnNiQcLgttnNxUXqQj- -O /home/vscode/esm-main.tar.gz
+WORKDIR /home/vscode
+RUN gdown --fuzzy --no-cookies --no-check-certificate -O openfold.tar.gz 1PvZLs4zeh3g_JajIsbeQmhOewoI_Stll \
+    && gdown --fuzzy --no-cookies --no-check-certificate -O esm-main.tar.gz 1YE_CEOUc5FYxrEnNiQcLgttnNxUXqQj-
 COPY create-env.sh /home/vscode/create-env.sh
-
-# install openfold conda env 
+# install openfold conda env
 RUN tar -zxvf /home/vscode/openfold.tar.gz -C /home/vscode && \
     rm /home/vscode/openfold.tar.gz && \
     chown -R vscode:vscode /home/vscode/openfold && \
     chmod -R 777 /home/vscode/openfold && \
     cd /home/vscode/openfold && \
     conda env create -f /home/vscode/openfold/environment.yml
-
 # install esm-fold command
 RUN zsh /home/vscode/create-env.sh
 
@@ -77,13 +75,14 @@ RUN zsh /home/vscode/create-env.sh
 # COPY esm2_t36_3B_UR50D.pt  /home/vscode/.cache/torch/hub/checkpoints/esm2_t36_3B_UR50D.pt
 # COPY esmfold_3B_v1.pt  /home/vscode/.cache/torch/hub/checkpoints/esmfold_3B_v1.pt
 
-# use gdown to download above files from google drive 
-RUN mkdir -p /home/vscode/.cache/torch/hub/checkpoints && \
-    gdown https://drive.google.com/uc?id=1lW8CVTSzX8bwLxbM8lAu_qXQkrPZuSxA -O /home/vscode/.cache/torch/hub/checkpoints/esm2_t36_3B_UR50D-contact-regression.pt && \
-    gdown https://drive.google.com/uc?id=1CHTS2cB8HrgayylwVB8tsrLKcpTqKFLx -O /home/vscode/.cache/torch/hub/checkpoints/esm2_t36_3B_UR50D.pt && \
-    gdown https://drive.google.com/uc?id=1CQZdYpXI1pb55ro8hCEP37pMsG2_Dbul -O /home/vscode/.cache/torch/hub/checkpoints/esmfold_3B_v1.pt
+# use gdown to download above files from google drive
+RUN mkdir -p /home/vscode/.cache/torch/hub/checkpoints
+WORKDIR /home/vscode/.cache/torch/hub/checkpoints
+RUN gdown --fuzzy -O esm2_t36_3B_UR50D-contact-regression.pt 1lW8CVTSzX8bwLxbM8lAu_qXQkrPZuSxA \
+    && gdown --fuzzy -O esm2_t36_3B_UR50D.pt 1CHTS2cB8HrgayylwVB8tsrLKcpTqKFLx \
+    && gdown --fuzzy -O esmfold_3B_v1.pt 1CQZdYpXI1pb55ro8hCEP37pMsG2_Dbul
 
-# change permission 
+# change permission
 RUN sudo chmod -R 777 /home/vscode/.cache/torch/hub/checkpoints
 COPY run-esm-fold.sh /home/vscode/run-esm-fold.sh
 
